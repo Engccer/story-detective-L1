@@ -1150,10 +1150,26 @@ function startGame() {
   updateCaseCards();
   showScreen('case-screen');
   state.screen = 'case_select';
+  playSfx('page_turn');
+  playAudio('case_select');
+  animateCaseCards();
   const msg = '사건을 선택하세요. ' + D.passages.map((p,i) => (i+1) + '번 ' + p.character + '의 이야기').join(', ') + '.';
   announce(msg);
   const firstCard = $('case-grid').children[0];
   if (firstCard) firstCard.focus();
+}
+
+function animateCaseCards() {
+  const cards = $('case-grid').children;
+  for (let i = 0; i < cards.length; i++) {
+    cards[i].style.opacity = '0';
+    cards[i].style.transform = 'translateY(20px)';
+    setTimeout(() => {
+      cards[i].style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+      cards[i].style.opacity = '1';
+      cards[i].style.transform = 'translateY(0)';
+    }, 150 + i * 200);
+  }
 }
 
 function startPassage(idx) {
@@ -1494,6 +1510,8 @@ function dismissClue() {
     showScreen('case-screen');
     updateCaseCards();
     state.screen = 'case_select';
+    playSfx('page_turn');
+    animateCaseCards();
     announce('다음 사건을 선택하세요.');
     const firstCard = $('case-grid').children[0];
     if (firstCard) firstCard.focus();
