@@ -1072,7 +1072,8 @@ function goBackFromReading() {
   updateCaseCards();
   state.screen = 'case_select';
   announce('사건 선택 화면으로 돌아갑니다.');
-  $('case-grid').children[0].focus();
+  const firstCard = $('case-grid').children[0];
+  if (firstCard) firstCard.focus();
 }
 
 function goBackToStart() {
@@ -1120,7 +1121,7 @@ function buildCaseCards() {
       '<div class="case-char">' + p.character + '</div>' +
       '<div class="case-desc">' + p.characterDesc + '</div>' +
       '<div class="case-key">' + (i+1) + '</div>';
-    card.addEventListener('click', () => startPassage(i));
+    card.addEventListener('click', () => { if (!state.solvedPassages.includes(i)) startPassage(i); });
     card.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startPassage(i); }
     });
@@ -1151,7 +1152,8 @@ function startGame() {
   state.screen = 'case_select';
   const msg = '사건을 선택하세요. ' + D.passages.map((p,i) => (i+1) + '번 ' + p.character + '의 이야기').join(', ') + '.';
   announce(msg);
-  $('case-grid').children[0].focus();
+  const firstCard = $('case-grid').children[0];
+  if (firstCard) firstCard.focus();
 }
 
 function startPassage(idx) {
@@ -1351,8 +1353,9 @@ function handleFillAnswer(selected, answer, q) {
   for (let i = 0; i < parts.length; i++) {
     html += parts[i];
     if (i < q.blanks.length) {
-      const val = i < state.filledBlanks.length ? state.filledBlanks[i] : q.blanks[i].answer;
-      const cls = (i < state.filledBlanks.length && state.filledBlanks[i] === q.blanks[i].answer) ? 'correct' : '';
+      const filled = i < state.filledBlanks.length;
+      const val = filled ? state.filledBlanks[i] : '___';
+      const cls = filled ? (state.filledBlanks[i] === q.blanks[i].answer ? 'correct' : 'wrong') : '';
       html += '<span class="blank ' + cls + '">' + val + '</span>';
     }
   }
@@ -1492,7 +1495,8 @@ function dismissClue() {
     updateCaseCards();
     state.screen = 'case_select';
     announce('다음 사건을 선택하세요.');
-    $('case-grid').children[0].focus();
+    const firstCard = $('case-grid').children[0];
+    if (firstCard) firstCard.focus();
   }
 }
 
