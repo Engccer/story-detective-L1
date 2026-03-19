@@ -15,7 +15,8 @@
 | TTS 오디오 내장 | base64 data URI (`audio_data.js`) | file:// 프로토콜에서도 재생 가능 |
 | 효과음 내장 | base64 data URI (`sfx_data.js`) | 레슨 간 공유 가능 |
 | 콘텐츠 데이터 | `lesson_data.js` (JS 객체) | 본문, 번역, 퀴즈, 어휘 |
-| 접근성 | ARIA live region, 전체 키보드 조작 | Space/Enter/1~4/T/R/↑↓ |
+| 브리핑 배경 | Gemini Image Generation (`gemini-2.5-flash-image`) | briefing_bg.png |
+| 접근성 | ARIA live region, 전체 키보드 조작 | Space/Enter/1~4/T/R/↑↓/Esc |
 | 배포 | GitHub Pages (legacy, master 브랜치) | `gh repo create` → `gh api .../pages` |
 
 ## 입력 자료
@@ -97,7 +98,7 @@ cp story-detective-L1/sfx_data.js story-detective-L<N>/sfx_data.js
 cp story-detective-L1/sfx/*.mp3 story-detective-L<N>/sfx/
 ```
 
-효과음 목록 (8개):
+효과음 목록 (9개):
 | 파일 | 설명 | 트리거 |
 |------|------|--------|
 | page_turn.mp3 | 종이 넘기는 소리 | READING 진입 |
@@ -107,7 +108,8 @@ cp story-detective-L1/sfx/*.mp3 story-detective-L<N>/sfx/
 | clue_found.mp3 | 단서 발견 | 단서 수집 완료 |
 | stamp.mp3 | 스탬프 | SOLVED 스탬프 |
 | case_solved.mp3 | 팡파레 | 사건 해결 |
-| typing.mp3 | 타자기 | UI 선택 |
+| typing.mp3 | 타자기 | UI 선택 / 브리핑 타자기 효과 |
+| radio_static.mp3 | 라디오 잡음 통신음 | 브리핑 시작 |
 
 ### 5단계: TTS 음성 생성
 
@@ -117,6 +119,7 @@ Gemini TTS API로 생성. **분당 10회 rate limit** → 7초 간격.
 - 단락 내레이션: `para_1.wav` ~ `para_N.wav` (전체 본문)
 - 단어 발음: `vocab_<word>.wav` (짧은 단어는 "The word is <word>." 형태)
 - 퀴즈 질문: `quiz_<P>_<Q>.wav`
+- 브리핑 내레이션: `briefing_1.wav` ~ `briefing_3.wav` (3개, 영어)
 
 ### 6단계: base64 오디오 번들 생성
 
@@ -146,19 +149,24 @@ python -m http.server 8765
 ```
 
 체크리스트:
-- [ ] 게임 시작 (Space)
-- [ ] 사건 선택 (1-3)
-- [ ] 본문 읽기 + 음성 재생 (Space)
+- [ ] 게임 시작 (Space) → 브리핑 화면 진입
+- [ ] 브리핑 Step 1~3 (타자기 효과 + TTS 내레이션 + 라디오 SFX)
+- [ ] 브리핑 Space 빠르게 눌러 타자기 스킵 → 다음 단계 진행
+- [ ] 브리핑 Esc → 시작 화면 복귀 (뒤로가기)
+- [ ] 사건 선택 (1-3) + ← Briefing 뒤로가기 버튼
+- [ ] 본문 읽기 + 음성 재생 (Space) + ← Cases 뒤로가기 버튼
+- [ ] Reading Esc → 사건 선택 복귀
 - [ ] 번역 토글 (T)
-- [ ] 퀴즈 진입 (Enter)
+- [ ] 퀴즈 진입 (Enter) — 뒤로가기 버튼 숨김 확인
 - [ ] 4지선다 키보드 선택 (1-4)
 - [ ] True/False 선택 (1-2)
-- [ ] 빈칸 완성 선택 (1-4)
+- [ ] 빈칸 완성 선택 (1-4), 오답 시 미도달 빈칸 정답 비노출
 - [ ] 정답/오답 효과 + 해설
 - [ ] 단어 복습 (↑↓, R)
 - [ ] 단서 수집 애니메이션
+- [ ] 이미 풀린 사건 카드 클릭 시 재진입 차단
 - [ ] 보너스 라운드
-- [ ] 최종 결과 화면
+- [ ] 최종 결과 화면 + ← Start 뒤로가기 버튼
 - [ ] 전체 키보드만으로 진행 가능
 
 ### 9단계: GitHub Pages 배포
@@ -184,10 +192,16 @@ gh api repos/Engccer/story-detective-L<N>/pages -X POST \
 story-detective-L<N>/
 ├── index.html          게임 본체 (단일 HTML)
 ├── lesson_data.js      레슨 콘텐츠 데이터
-├── audio_data.js       base64 TTS 오디오 번들
-├── sfx_data.js         base64 효과음 번들 (레슨 간 공유)
+├── audio_data.js       base64 TTS 오디오 번들 (briefing_1~3 포함)
+├── sfx_data.js         base64 효과음 번들 (radio_static 포함, 레슨 간 공유)
+├── briefing_bg.png     브리핑 배경 이미지 (Gemini 생성)
 ├── audio/              원본 TTS WAV 파일 (백업)
+│   ├── para_*.wav      본문 내레이션
+│   ├── vocab_*.wav     단어 발음
+│   ├── quiz_*.wav      퀴즈 질문
+│   └── briefing_*.wav  브리핑 내레이션 (3개)
 ├── sfx/                원본 효과음 MP3 파일 (백업)
+│   └── radio_static.mp3 브리핑 라디오 잡음
 └── WORKFLOW.md         이 문서
 ```
 
