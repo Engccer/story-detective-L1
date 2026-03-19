@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Story Detective - Lesson 1 Reading</title>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117;
+  --bg-card: #161b22;
+  --bg-paper: #1c2128;
+  --accent: #d4a030;
+  --accent-glow: rgba(212,160,48,0.3);
+  --accent2: #e8b849;
+  --correct: #3fb950;
+  --wrong: #f85149;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --text-ko: #b8c0cc;
+  --border: #30363d;
+  --reading-bg: #1a1812;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans KR', sans-serif;
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); border: 0;
+}
+.screen {
+  width: 100vw; height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 2rem;
+  animation: fadeIn 0.5s ease;
+}
+.screen.hidden { display: none; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* ===== START ===== */
+#start-screen .title {
+  font-family: 'Special Elite', cursive;
+  font-size: 3.5rem;
+  color: var(--accent);
+  text-shadow: 0 0 30px var(--accent-glow);
+  margin-bottom: 0.3rem;
+}
+#start-screen .subtitle {
+  font-size: 1.3rem;
+  color: var(--text-dim);
+  margin-bottom: 0.5rem;
+}
+#start-screen .lesson-title {
+  font-family: 'Special Elite', cursive;
+  font-size: 1.6rem;
+  color: var(--accent2);
+  margin-bottom: 2rem;
+}
+.magnifying {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%,100% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-12px) rotate(5deg); }
+}
+.start-msg {
+  font-size: 1.1rem;
+  color: var(--text-ko);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+.action-btn {
+  font-family: 'Special Elite', cursive;
+  font-size: 1.4rem;
+  padding: 0.8em 2.5em;
+  background: transparent;
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  animation: pulse 2s ease-in-out infinite;
+}
+.action-btn:hover, .action-btn:focus {
+  background: var(--accent);
+  color: var(--bg);
+  outline: none;
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 5px var(--accent-glow); }
+  50% { box-shadow: 0 0 20px var(--accent-glow); }
+}
+.controls-hint {
+  margin-top: 2rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  text-align: center;
+  line-height: 1.8;
+}
+.controls-hint kbd {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.15em 0.5em;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 0.85em;
+}
+/* ===== CASE SELECT ===== */
+.case-grid {
+  display: flex;
+  gap: 1.5rem;
+  margin: 2rem 0;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.case-card {
+  width: 200px;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+}
+.case-card:hover, .case-card:focus {
+  border-color: var(--accent);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+  outline: none;
+}
+.case-card.solved {
+  border-color: var(--correct);
+  opacity: 0.7;
+}
+.case-card.solved::after {
+  content: 'SOLVED';
+  position: absolute;
+  top: 10px; right: 10px;
+  font-family: 'Special Elite', cursive;
+  font-size: 0.7rem;
+  color: var(--correct);
+  border: 1px solid var(--correct);
+  padding: 2px 6px;
+  border-radius: 3px;
+  transform: rotate(5deg);
+}
+.case-num {
+  font-family: 'Special Elite', cursive;
+  font-size: 1.1rem;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+.case-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+.case-char {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+.case-desc {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+.case-key {
+  display: inline-block;
+  margin-top: 0.8rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.2em 0.7em;
+  font-size: 0.9rem;
+  color: var(--accent);
+}
+/* ===== GAME SCREEN ===== */
+#game-screen {
+  justify-content: flex-start;
+  padding: 1rem 2rem;
+}
+.top-bar {
+  width: 100%;
+  max-width: 750px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+.top-bar .case-info {
+  font-family: 'Special Elite', cursive;
+  color: var(--accent);
+}
+.top-bar .score-info { color: var(--text-dim); }
+.top-bar .score-info .score-val { color: var(--accent2); font-weight: 700; }
+.top-bar .clue-info span { color: var(--correct); }
+/* ===== READING PANEL ===== */
+.panel {
+  width: 100%;
+  max-width: 750px;
+  animation: fadeIn 0.4s ease;
+}
+.panel.hidden { display: none; }
+.reading-card {
+  background: var(--reading-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2rem;
+  position: relative;
+  margin-bottom: 1rem;
+}
+.reading-label {
+  font-family: 'Special Elite', cursive;
+  font-size: 0.9rem;
+  color: var(--accent);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.passage-text {
+  font-size: 1.25rem;
+  line-height: 2;
+  white-space: pre-wrap;
+  color: var(--text);
+}
+.translation-text {
+  margin-top: 1.2rem;
+  padding-top: 1.2rem;
+  border-top: 1px dashed var(--border);
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--text-ko);
+  white-space: pre-wrap;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.4s ease, padding 0.4s ease;
+}
+.translation-text.visible {
+  max-height: 500px;
+  opacity: 1;
+}
+.reading-controls {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.ctrl-btn {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 1rem;
+  padding: 0.6em 1.5em;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ctrl-btn:hover, .ctrl-btn:focus {
+  border-color: var(--accent);
+  background: #1e2530;
+  outline: none;
+}
+.ctrl-btn .key-hint {
+  font-size: 0.8em;
+  color: var(--text-dim);
+  margin-left: 0.3em;
+}
+/* ===== QUIZ PANEL ===== */
+.quiz-header {
+  font-family: 'Special Elite', cursive;
+  font-size: 1rem;
+  color: var(--accent);
+  margin-bottom: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.quiz-question-text {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+  min-height: 3em;
+}
+.quiz-question-text .blank {
+  display: inline-block;
+  min-width: 80px;
+  border-bottom: 2px dashed var(--accent);
+  text-align: center;
+  padding: 0 0.3em;
+  color: var(--accent2);
+  font-weight: 700;
+}
+.choices-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+.choice-btn {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 1.1rem;
+  padding: 0.8em 1em;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  position: relative;
+}
+.choice-btn .choice-key {
+  font-family: 'Special Elite', cursive;
+  color: var(--accent);
+  margin-right: 0.5em;
+}
+.choice-btn:hover, .choice-btn:focus {
+  border-color: var(--accent2);
+  background: #1e2530;
+  outline: none;
+  transform: scale(1.02);
+}
+.choice-btn:disabled {
+  cursor: default;
+  opacity: 0.5;
+  transform: none;
+}
+.choice-btn.correct {
+  border-color: var(--correct);
+  background: rgba(63,185,80,0.12);
+}
+.choice-btn.wrong {
+  border-color: var(--wrong);
+  background: rgba(248,81,73,0.12);
+}
+/* ===== QUIZ RESULT ===== */
+.result-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+  animation: fadeIn 0.3s ease;
+}
+.result-header {
+  font-family: 'Special Elite', cursive;
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+}
+.result-header.is-correct { color: var(--correct); }
+.result-header.is-wrong { color: var(--wrong); }
+.result-points {
+  font-size: 0.95rem;
+  color: var(--accent2);
+  margin-bottom: 0.8rem;
+}
+.result-explanation {
+  font-size: 0.95rem;
+  color: var(--text-ko);
+  line-height: 1.6;
+}
+.result-next {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+/* ===== VOCAB PANEL ===== */
+.vocab-title {
+  font-family: 'Special Elite', cursive;
+  font-size: 1.1rem;
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+.vocab-list { list-style: none; }
+.vocab-item {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  transition: background 0.2s;
+  display: flex;
+  gap: 0.8rem;
+  align-items: baseline;
+}
+.vocab-item.active {
+  background: rgba(212,160,48,0.1);
+  border-left: 3px solid var(--accent);
+}
+.vocab-item .vocab-word {
+  font-weight: 700;
+  min-width: 120px;
+}
+.vocab-item .vocab-ko {
+  color: var(--text-ko);
+  font-size: 0.95rem;
+}
+.vocab-controls {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  text-align: center;
+}
+/* ===== CLUE OVERLAY ===== */
+.clue-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.3s ease;
+}
+.clue-overlay.hidden { display: none; }
+.clue-card {
+  width: 260px;
+  height: 180px;
+  background: var(--bg-card);
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  animation: cardFlip 0.6s ease;
+  box-shadow: 0 0 40px var(--accent-glow);
+}
+@keyframes cardFlip {
+  0% { transform: perspective(600px) rotateY(90deg) scale(0.8); opacity: 0; }
+  60% { transform: perspective(600px) rotateY(-10deg) scale(1.05); opacity: 1; }
+  100% { transform: perspective(600px) rotateY(0) scale(1); }
+}
+.clue-card .clue-label {
+  font-family: 'Special Elite', cursive;
+  font-size: 1.2rem;
+  color: var(--accent);
+}
+.clue-card .clue-char { font-size: 1rem; font-weight: 700; }
+.clue-card .clue-stamp {
+  font-family: 'Special Elite', cursive;
+  font-size: 1.5rem;
+  color: var(--correct);
+  border: 2px solid var(--correct);
+  padding: 0.1em 0.6em;
+  border-radius: 4px;
+  transform: rotate(-8deg);
+  animation: stampIn 0.4s ease 0.4s both;
+}
+@keyframes stampIn {
+  0% { transform: rotate(-8deg) scale(3); opacity: 0; }
+  60% { transform: rotate(-8deg) scale(0.9); opacity: 1; }
+  100% { transform: rotate(-8deg) scale(1); }
+}
+.clue-progress {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  color: var(--text-dim);
+}
+.clue-next-hint {
+  margin-top: 0.8rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+/* ===== END SCREEN ===== */
+#end-screen .report-title {
+  font-family: 'Special Elite', cursive;
+  font-size: 2.2rem;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+.report-case {
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  margin-bottom: 1.5rem;
+}
+.report-stamp {
+  font-family: 'Special Elite', cursive;
+  font-size: 2.5rem;
+  color: #e63946;
+  border: 3px solid #e63946;
+  padding: 0.15em 0.8em;
+  border-radius: 6px;
+  transform: rotate(-6deg);
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  animation: stampIn 0.5s ease 0.3s both;
+}
+.report-stats {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.4rem 2rem;
+  font-size: 1.05rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+.report-stats .stat-label { color: var(--text-dim); }
+.report-stats .stat-val { color: var(--accent2); font-weight: 700; }
+.report-vocab {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  max-width: 500px;
+  width: 100%;
+}
+.report-vocab-title {
+  font-family: 'Special Elite', cursive;
+  font-size: 0.95rem;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+.report-vocab-list {
+  font-size: 0.95rem;
+  color: var(--text-ko);
+  line-height: 1.8;
+}
+.end-controls {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+/* ===== PARTICLES ===== */
+.particle {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 200;
+}
+.confetti {
+  position: fixed;
+  pointer-events: none;
+  z-index: 200;
+}
+/* ===== TF LAYOUT ===== */
+.tf-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+/* ===== STREAK ===== */
+.streak-badge {
+  display: none;
+  font-family: 'Special Elite', cursive;
+  font-size: 0.9rem;
+  color: var(--accent2);
+  margin-left: 1rem;
+}
+.streak-badge.visible { display: inline; }
+</style>
+<script src="lesson_data.js"></script>
+<script src="sfx_data.js"></script>
+<script src="audio_data.js" onerror="window.AUDIO_DATA={}"></script>
+</head>
+<body>
+
+<div id="sr-announce" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+
+<!-- ===== START SCREEN ===== -->
+<div id="start-screen" class="screen" role="main" aria-label="Story Detective 게임 시작 화면">
+  <div class="magnifying" aria-hidden="true">&#128269;</div>
+  <div class="title">STORY DETECTIVE</div>
+  <div class="subtitle">Lesson <span id="start-lesson-num"></span> &mdash; Reading</div>
+  <div class="lesson-title" id="start-lesson-title"></div>
+  <div class="start-msg">탐정님, 이야기 속 단서를 찾아주세요!</div>
+  <button class="action-btn" id="start-btn" tabindex="0">OPEN CASE FILE</button>
+  <div class="controls-hint">
+    <kbd>Space</kbd> 시작 &nbsp; <kbd>1</kbd>~<kbd>4</kbd> 선택 &nbsp; <kbd>T</kbd> 번역<br>
+    <kbd>R</kbd> 다시 듣기 &nbsp; <kbd>Enter</kbd> 진행 &nbsp; <kbd>↑↓</kbd> 단어 탐색
+  </div>
+</div>
+
+<!-- ===== CASE SELECT SCREEN ===== -->
+<div id="case-screen" class="screen hidden" role="main" aria-label="사건 선택 화면">
+  <div class="title" style="font-size:2rem; margin-bottom:0.3rem;">CASE FILES</div>
+  <div style="color:var(--text-dim); margin-bottom:0.5rem;">조사할 사건을 선택하세요</div>
+  <div class="case-grid" id="case-grid"></div>
+  <div style="color:var(--text-dim); font-size:0.9rem;">
+    <kbd>1</kbd>~<kbd>3</kbd> 사건 선택
+  </div>
+</div>
+
+<!-- ===== GAME SCREEN ===== -->
+<div id="game-screen" class="screen hidden" role="main" aria-label="Story Detective 게임">
+  <div class="top-bar">
+    <div class="case-info" id="top-case-info">CASE 1: Jihun</div>
+    <div class="score-info">Score: <span class="score-val" id="top-score">0</span>
+      <span class="streak-badge" id="top-streak">&#11088; x2</span>
+    </div>
+    <div class="clue-info">Clues: <span id="top-clues">0</span>/<span id="top-total-clues">3</span></div>
+  </div>
+
+  <!-- READING -->
+  <div id="reading-panel" class="panel">
+    <div class="reading-card">
+      <div class="reading-label">&#128214; <span id="reading-label-text">Passage</span></div>
+      <div class="passage-text" id="passage-text" tabindex="-1"></div>
+      <div class="translation-text" id="translation-text"></div>
+    </div>
+    <div class="reading-controls">
+      <button class="ctrl-btn" id="btn-listen" tabindex="0">&#128266; Listen <span class="key-hint">(Space)</span></button>
+      <button class="ctrl-btn" id="btn-translate" tabindex="0">&#128214; 번역 <span class="key-hint">(T)</span></button>
+      <button class="ctrl-btn" id="btn-investigate" tabindex="0">&#128269; Investigation <span class="key-hint">(Enter)</span></button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz-panel" class="panel hidden">
+    <div class="quiz-header">&#128269; <span id="quiz-header-text">INVESTIGATION</span></div>
+    <div class="quiz-question-text" id="quiz-question" tabindex="-1"></div>
+    <div id="quiz-choices"></div>
+    <div id="quiz-result" class="hidden"></div>
+  </div>
+
+  <!-- VOCAB REVIEW -->
+  <div id="vocab-panel" class="panel hidden">
+    <div class="vocab-title">&#128203; KEY VOCABULARY</div>
+    <ul class="vocab-list" id="vocab-list" role="listbox" aria-label="핵심 단어 목록"></ul>
+    <div class="vocab-controls">
+      <kbd>↑</kbd><kbd>↓</kbd> 이동 &nbsp; <kbd>R</kbd> 발음 듣기 &nbsp; <kbd>Space</kbd> 다음
+    </div>
+  </div>
+</div>
+
+<!-- CLUE OVERLAY -->
+<div id="clue-overlay" class="clue-overlay hidden">
+  <div style="text-align:center;">
+    <div class="clue-card">
+      <div class="clue-label" id="clue-label">CLUE #1</div>
+      <div class="clue-char" id="clue-char">Jihun's Story</div>
+      <div class="clue-stamp">SOLVED</div>
+    </div>
+    <div class="clue-progress" id="clue-progress">Clues: 1 / 3</div>
+    <div class="clue-next-hint"><kbd>Space</kbd> 다음 사건으로</div>
+  </div>
+</div>
+
+<!-- ===== END SCREEN ===== -->
+<div id="end-screen" class="screen hidden" role="main" aria-label="게임 결과">
+  <div class="report-title">&#128203; DETECTIVE REPORT</div>
+  <div class="report-case" id="end-case-title"></div>
+  <div class="report-stamp" id="end-stamp">CASE SOLVED!</div>
+  <div class="report-stats" id="end-stats"></div>
+  <div class="report-vocab" id="end-vocab-section">
+    <div class="report-vocab-title">&#128203; Vocabulary Collected</div>
+    <div class="report-vocab-list" id="end-vocab-list"></div>
+  </div>
+  <div class="end-controls">
+    <button class="action-btn" id="btn-restart" tabindex="0">PLAY AGAIN <span class="key-hint">(Space)</span></button>
+  </div>
+</div>
+
+<script>
+/* ===== DOM SHORTHAND ===== */
+const $ = id => document.getElementById(id);
+
+/* ===== AUDIO ENGINE ===== */
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSfx(name) {
+  if (typeof SFX_DATA === 'undefined' || !SFX_DATA[name]) return;
+  const a = new Audio(SFX_DATA[name]);
+  a.volume = 0.6;
+  a.play().catch(() => {});
+}
+
+let currentAudio = null;
+function playAudio(key) {
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  const src = (typeof AUDIO_DATA !== 'undefined' && AUDIO_DATA[key])
+    ? AUDIO_DATA[key]
+    : 'audio/' + key + '.wav';
+  currentAudio = new Audio(src);
+  currentAudio.play().catch(() => {});
+}
+
+/* ===== ACCESSIBILITY ===== */
+function announce(msg) {
+  const el = $('sr-announce');
+  el.textContent = '';
+  requestAnimationFrame(() => { el.textContent = msg; });
+}
+
+/* ===== UTILS ===== */
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* ===== GAME STATE ===== */
+const D = LESSON_DATA;
+let state = {
+  screen: 'start',
+  passageIdx: -1,
+  quizIdx: 0,
+  blankIdx: 0,
+  score: 0,
+  streak: 0,
+  maxStreak: 0,
+  correctCount: 0,
+  totalQuestions: 0,
+  solvedPassages: [],
+  translationVisible: false,
+  vocabIdx: 0,
+  quizOrder: [],
+  bonusIdx: 0,
+  bonusOrder: [],
+  filledBlanks: []
+};
+
+/* ===== SCREENS ===== */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  $(id).classList.remove('hidden');
+  $(id).style.animation = 'none';
+  $(id).offsetHeight; // reflow
+  $(id).style.animation = 'fadeIn 0.5s ease';
+}
+
+function showPanel(id) {
+  ['reading-panel','quiz-panel','vocab-panel'].forEach(p => $(p).classList.add('hidden'));
+  $(id).classList.remove('hidden');
+}
+
+/* ===== INIT ===== */
+function init() {
+  $('start-lesson-num').textContent = D.lesson;
+  $('start-lesson-title').textContent = '"' + D.title + '"';
+  $('top-total-clues').textContent = D.passages.length;
+  buildCaseCards();
+  announce('Story Detective 게임. Lesson ' + D.lesson + ': ' + D.title + '. Space를 눌러 시작하세요.');
+}
+
+function buildCaseCards() {
+  const grid = $('case-grid');
+  grid.innerHTML = '';
+  const icons = ['\uD83D\uDCC1', '\uD83D\uDCC1', '\uD83D\uDCC1'];
+  D.passages.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'case-card';
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', 'Case ' + (i+1) + ': ' + p.character + '. ' + p.characterDesc);
+    card.innerHTML =
+      '<div class="case-num">CASE ' + (i+1) + '</div>' +
+      '<div class="case-icon">' + icons[i] + '</div>' +
+      '<div class="case-char">' + p.character + '</div>' +
+      '<div class="case-desc">' + p.characterDesc + '</div>' +
+      '<div class="case-key">' + (i+1) + '</div>';
+    card.addEventListener('click', () => startPassage(i));
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startPassage(i); }
+    });
+    grid.appendChild(card);
+  });
+}
+
+function updateCaseCards() {
+  const cards = $('case-grid').children;
+  for (let i = 0; i < cards.length; i++) {
+    if (state.solvedPassages.includes(i)) {
+      cards[i].classList.add('solved');
+    }
+  }
+}
+
+/* ===== GAME FLOW ===== */
+function startGame() {
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  state.score = 0;
+  state.streak = 0;
+  state.maxStreak = 0;
+  state.correctCount = 0;
+  state.totalQuestions = 0;
+  state.solvedPassages = [];
+  state.passageIdx = -1;
+  updateCaseCards();
+  showScreen('case-screen');
+  state.screen = 'case_select';
+  const msg = '사건을 선택하세요. ' + D.passages.map((p,i) => (i+1) + '번 ' + p.character + '의 이야기').join(', ') + '.';
+  announce(msg);
+  $('case-grid').children[0].focus();
+}
+
+function startPassage(idx) {
+  state.passageIdx = idx;
+  state.translationVisible = false;
+  const p = D.passages[idx];
+  state.quizOrder = shuffle([...Array(p.quizzes.length).keys()]);
+  state.quizIdx = 0;
+  state.blankIdx = 0;
+  state.filledBlanks = [];
+
+  showScreen('game-screen');
+  showPanel('reading-panel');
+  state.screen = 'reading';
+
+  $('top-case-info').textContent = 'CASE ' + (idx+1) + ': ' + p.character;
+  $('top-score').textContent = state.score;
+  $('top-clues').textContent = state.solvedPassages.length;
+  updateStreak();
+
+  $('reading-label-text').textContent = p.character + "'s Story (p." + p.page + ')';
+  $('passage-text').textContent = p.text;
+  $('translation-text').textContent = p.translation;
+  $('translation-text').classList.remove('visible');
+
+  playSfx('page_turn');
+  $('passage-text').focus();
+  announce('사건 ' + (idx+1) + '. ' + p.character + '의 이야기입니다. 본문을 읽어 보세요. Space를 누르면 음성으로 들을 수 있습니다.');
+}
+
+function toggleTranslation() {
+  state.translationVisible = !state.translationVisible;
+  $('translation-text').classList.toggle('visible', state.translationVisible);
+  announce(state.translationVisible ? '한국어 해석이 표시됩니다.' : '한국어 해석을 숨겼습니다.');
+}
+
+function startInvestigation() {
+  playSfx('magnifying');
+  showPanel('quiz-panel');
+  state.screen = 'quiz';
+  loadQuiz();
+}
+
+/* ===== QUIZ ===== */
+function loadQuiz() {
+  const p = D.passages[state.passageIdx];
+  const qIdx = state.quizOrder[state.quizIdx];
+  const q = p.quizzes[qIdx];
+
+  $('quiz-header-text').textContent = 'INVESTIGATION — Question ' + (state.quizIdx + 1) + ' of ' + p.quizzes.length;
+  $('quiz-result').classList.add('hidden');
+  $('quiz-result').innerHTML = '';
+
+  const container = $('quiz-choices');
+  container.innerHTML = '';
+
+  if (q.type === 'multiple_choice') {
+    renderMC(q, container);
+  } else if (q.type === 'true_false') {
+    renderTF(q, container);
+  } else if (q.type === 'fill_blank') {
+    state.blankIdx = 0;
+    state.filledBlanks = [];
+    renderFillBlank(q, container);
+  }
+
+  if (q.audioKey) playAudio(q.audioKey);
+  $('quiz-question').focus();
+
+  let annMsg = '문제 ' + (state.quizIdx+1) + '. ' + q.question;
+  if (q.type === 'true_false') annMsg += ' True 또는 False를 선택하세요.';
+  else if (q.type === 'fill_blank') annMsg += ' 빈칸에 들어갈 단어를 선택하세요.';
+  else annMsg += ' 1번부터 4번까지 선택하세요.';
+  announce(annMsg);
+}
+
+function renderMC(q, container) {
+  $('quiz-question').textContent = q.question;
+  container.className = 'choices-grid';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = '<span class="choice-key">[' + (i+1) + ']</span> ' + opt;
+    btn.tabIndex = 0;
+    btn.addEventListener('click', () => handleMCAnswer(i, q));
+    btn.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); handleMCAnswer(i, q); }
+    });
+    container.appendChild(btn);
+  });
+}
+
+function renderTF(q, container) {
+  $('quiz-question').textContent = q.question;
+  container.className = 'tf-grid';
+  ['TRUE', 'FALSE'].forEach((label, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = '<span class="choice-key">[' + (i+1) + ']</span> ' + label;
+    btn.tabIndex = 0;
+    const val = i === 0;
+    btn.addEventListener('click', () => handleTFAnswer(val, q));
+    btn.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); handleTFAnswer(val, q); }
+    });
+    container.appendChild(btn);
+  });
+}
+
+function renderFillBlank(q, container) {
+  // Render question with blanks
+  const parts = q.question.split('_____');
+  let html = '';
+  for (let i = 0; i < parts.length; i++) {
+    html += parts[i];
+    if (i < q.blanks.length) {
+      if (i < state.blankIdx) {
+        html += '<span class="blank">' + state.filledBlanks[i] + '</span>';
+      } else if (i === state.blankIdx) {
+        html += '<span class="blank">?</span>';
+      } else {
+        html += '<span class="blank">&nbsp;&nbsp;&nbsp;</span>';
+      }
+    }
+  }
+  $('quiz-question').innerHTML = html;
+
+  // Render options for current blank
+  const blank = q.blanks[state.blankIdx];
+  container.className = 'choices-grid';
+  const shuffledOpts = shuffle(blank.options);
+  shuffledOpts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = '<span class="choice-key">[' + (i+1) + ']</span> ' + opt;
+    btn.tabIndex = 0;
+    btn.addEventListener('click', () => handleFillAnswer(opt, blank.answer, q));
+    btn.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); handleFillAnswer(opt, blank.answer, q); }
+    });
+    container.appendChild(btn);
+  });
+}
+
+function handleMCAnswer(idx, q) {
+  if (state.screen !== 'quiz') return;
+  state.screen = 'quiz_result';
+  const isCorrect = idx === q.answer;
+  const btns = $('quiz-choices').querySelectorAll('.choice-btn');
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.answer) btn.classList.add('correct');
+    if (i === idx && !isCorrect) btn.classList.add('wrong');
+  });
+  showQuizResult(isCorrect, q);
+}
+
+function handleTFAnswer(val, q) {
+  if (state.screen !== 'quiz') return;
+  state.screen = 'quiz_result';
+  const isCorrect = val === q.answer;
+  const btns = $('quiz-choices').querySelectorAll('.choice-btn');
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    const bVal = i === 0;
+    if (bVal === q.answer) btn.classList.add('correct');
+    if (bVal === val && !isCorrect) btn.classList.add('wrong');
+  });
+  showQuizResult(isCorrect, q);
+}
+
+function handleFillAnswer(selected, answer, q) {
+  if (state.screen !== 'quiz') return;
+  const isCorrect = selected === answer;
+  state.filledBlanks.push(isCorrect ? answer : selected);
+
+  if (isCorrect && state.blankIdx < q.blanks.length - 1) {
+    // Move to next blank
+    state.blankIdx++;
+    playSfx('typing');
+    const container = $('quiz-choices');
+    container.innerHTML = '';
+    renderFillBlank(q, container);
+    announce('정답! 다음 빈칸을 채워 주세요.');
+    return;
+  }
+
+  // All blanks done or wrong
+  state.screen = 'quiz_result';
+  const allCorrect = isCorrect && state.blankIdx === q.blanks.length - 1;
+
+  // Show all blanks filled
+  const parts = q.question.split('_____');
+  let html = '';
+  for (let i = 0; i < parts.length; i++) {
+    html += parts[i];
+    if (i < q.blanks.length) {
+      const val = i < state.filledBlanks.length ? state.filledBlanks[i] : q.blanks[i].answer;
+      const cls = (i < state.filledBlanks.length && state.filledBlanks[i] === q.blanks[i].answer) ? 'correct' : '';
+      html += '<span class="blank ' + cls + '">' + val + '</span>';
+    }
+  }
+  $('quiz-question').innerHTML = html;
+  $('quiz-choices').innerHTML = '';
+
+  showQuizResult(allCorrect, q);
+}
+
+function showQuizResult(isCorrect, q) {
+  state.totalQuestions++;
+  let points = 0;
+
+  if (isCorrect) {
+    state.correctCount++;
+    state.streak++;
+    if (state.streak > state.maxStreak) state.maxStreak = state.streak;
+    const mult = state.streak >= 3 ? 2 : state.streak === 2 ? 1.5 : 1;
+    const base = q.type === 'fill_blank' ? 12 : q.type === 'true_false' ? 8 : 10;
+    points = Math.round(base * mult);
+    state.score += points;
+    playSfx('correct');
+  } else {
+    state.streak = 0;
+    playSfx('wrong');
+  }
+
+  $('top-score').textContent = state.score;
+  updateStreak();
+
+  const rc = $('quiz-result');
+  rc.classList.remove('hidden');
+  rc.innerHTML =
+    '<div class="result-card">' +
+      '<div class="result-header ' + (isCorrect ? 'is-correct' : 'is-wrong') + '">' +
+        (isCorrect ? '&#128269; CLUE FOUND!' : '&#10060; WRONG LEAD') +
+      '</div>' +
+      (isCorrect ? '<div class="result-points">+' + points + ' points' + (state.streak >= 2 ? ' (x' + (state.streak >= 3 ? '2' : '1.5') + ' streak!)' : '') + '</div>' : '') +
+      '<div class="result-explanation">' + q.explanation + '</div>' +
+      '<div class="result-next"><kbd>Space</kbd> 다음으로</div>' +
+    '</div>';
+
+  if (isCorrect) {
+    spawnSparkles();
+  }
+
+  announce(isCorrect
+    ? '정답! 단서를 찾았습니다. ' + points + '점 획득.'
+    : '오답. ' + q.explanation);
+}
+
+function updateStreak() {
+  const badge = $('top-streak');
+  if (state.streak >= 2) {
+    badge.classList.add('visible');
+    badge.textContent = '\u2B50 x' + (state.streak >= 3 ? '2' : '1.5');
+  } else {
+    badge.classList.remove('visible');
+  }
+}
+
+function advanceFromQuiz() {
+  const p = D.passages[state.passageIdx];
+  state.quizIdx++;
+  if (state.quizIdx < p.quizzes.length) {
+    state.screen = 'quiz';
+    state.blankIdx = 0;
+    state.filledBlanks = [];
+    loadQuiz();
+  } else {
+    showVocabReview();
+  }
+}
+
+/* ===== VOCAB REVIEW ===== */
+function showVocabReview() {
+  const p = D.passages[state.passageIdx];
+  showPanel('vocab-panel');
+  state.screen = 'vocab_review';
+  state.vocabIdx = 0;
+
+  const list = $('vocab-list');
+  list.innerHTML = '';
+  p.vocabulary.forEach((v, i) => {
+    const li = document.createElement('li');
+    li.className = 'vocab-item' + (i === 0 ? ' active' : '');
+    li.setAttribute('role', 'option');
+    li.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+    li.innerHTML = '<span class="vocab-word">' + v.word + '</span><span class="vocab-ko">— ' + v.korean + '</span>';
+    list.appendChild(li);
+  });
+
+  announce('핵심 단어 복습. ' + p.vocabulary[0].word + ' ' + p.vocabulary[0].korean + '. 위아래 화살표로 이동, R로 발음을 들을 수 있습니다.');
+  list.focus();
+}
+
+function navigateVocab(dir) {
+  const p = D.passages[state.passageIdx];
+  const items = $('vocab-list').children;
+  items[state.vocabIdx].classList.remove('active');
+  items[state.vocabIdx].setAttribute('aria-selected', 'false');
+  state.vocabIdx = Math.max(0, Math.min(p.vocabulary.length - 1, state.vocabIdx + dir));
+  items[state.vocabIdx].classList.add('active');
+  items[state.vocabIdx].setAttribute('aria-selected', 'true');
+  const v = p.vocabulary[state.vocabIdx];
+  announce(v.word + ' ' + v.korean);
+}
+
+function playVocabAudio() {
+  const v = D.passages[state.passageIdx].vocabulary[state.vocabIdx];
+  playAudio(v.audioKey);
+}
+
+/* ===== CLUE COLLECTED ===== */
+function showClueCollected() {
+  state.solvedPassages.push(state.passageIdx);
+  $('top-clues').textContent = state.solvedPassages.length;
+  state.screen = 'clue_collected';
+
+  const p = D.passages[state.passageIdx];
+  $('clue-label').textContent = 'CLUE #' + state.solvedPassages.length;
+  $('clue-char').textContent = p.character + "'s Story";
+  $('clue-progress').textContent = 'Clues: ' + state.solvedPassages.length + ' / ' + D.passages.length;
+  $('clue-overlay').classList.remove('hidden');
+
+  playSfx('clue_found');
+  spawnDustParticles();
+  announce('단서 ' + state.solvedPassages.length + ' 수집 완료. ' + p.character + '의 이야기 조사 완료.');
+}
+
+function dismissClue() {
+  $('clue-overlay').classList.add('hidden');
+  if (state.solvedPassages.length >= D.passages.length) {
+    startBonusRound();
+  } else {
+    showScreen('case-screen');
+    updateCaseCards();
+    state.screen = 'case_select';
+    announce('다음 사건을 선택하세요.');
+    $('case-grid').children[0].focus();
+  }
+}
+
+/* ===== BONUS ROUND ===== */
+function startBonusRound() {
+  if (D.bonusQuizzes.length === 0) {
+    showEndScreen();
+    return;
+  }
+  state.bonusOrder = shuffle([...Array(D.bonusQuizzes.length).keys()]);
+  state.bonusIdx = 0;
+  showScreen('game-screen');
+  showPanel('quiz-panel');
+  state.screen = 'bonus';
+  $('top-case-info').textContent = 'BONUS ROUND';
+  loadBonusQuiz();
+}
+
+function loadBonusQuiz() {
+  const qIdx = state.bonusOrder[state.bonusIdx];
+  const q = D.bonusQuizzes[qIdx];
+  $('quiz-header-text').textContent = 'BONUS — Question ' + (state.bonusIdx+1) + ' of ' + D.bonusQuizzes.length;
+  $('quiz-question').textContent = q.question;
+  $('quiz-result').classList.add('hidden');
+  $('quiz-result').innerHTML = '';
+
+  const container = $('quiz-choices');
+  container.innerHTML = '';
+  container.className = 'choices-grid';
+
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = '<span class="choice-key">[' + (i+1) + ']</span> ' + opt;
+    btn.tabIndex = 0;
+    btn.addEventListener('click', () => handleBonusAnswer(i, q));
+    btn.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); handleBonusAnswer(i, q); }
+    });
+    container.appendChild(btn);
+  });
+
+  $('quiz-question').focus();
+  announce('보너스 문제 ' + (state.bonusIdx+1) + '. ' + q.question);
+}
+
+function handleBonusAnswer(idx, q) {
+  if (state.screen !== 'bonus') return;
+  state.screen = 'bonus_result';
+  const isCorrect = idx === q.answer;
+  const btns = $('quiz-choices').querySelectorAll('.choice-btn');
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.answer) btn.classList.add('correct');
+    if (i === idx && !isCorrect) btn.classList.add('wrong');
+  });
+
+  state.totalQuestions++;
+  if (isCorrect) {
+    state.correctCount++;
+    state.score += 5;
+    playSfx('correct');
+  } else {
+    playSfx('wrong');
+  }
+  $('top-score').textContent = state.score;
+
+  const rc = $('quiz-result');
+  rc.classList.remove('hidden');
+  rc.innerHTML =
+    '<div class="result-card">' +
+      '<div class="result-header ' + (isCorrect ? 'is-correct' : 'is-wrong') + '">' +
+        (isCorrect ? '&#9989; Correct!' : '&#10060; Wrong!') +
+      '</div>' +
+      (isCorrect ? '<div class="result-points">+5 points</div>' : '') +
+      '<div class="result-explanation">' + q.explanation + '</div>' +
+      '<div class="result-next"><kbd>Space</kbd> 다음</div>' +
+    '</div>';
+
+  announce(isCorrect ? '정답! 5점 획득.' : '오답. ' + q.explanation);
+}
+
+function advanceBonus() {
+  state.bonusIdx++;
+  if (state.bonusIdx < D.bonusQuizzes.length) {
+    state.screen = 'bonus';
+    loadBonusQuiz();
+  } else {
+    showEndScreen();
+  }
+}
+
+/* ===== END SCREEN ===== */
+function showEndScreen() {
+  state.screen = 'end';
+  showScreen('end-screen');
+
+  playSfx('case_solved');
+  setTimeout(() => playSfx('stamp'), 300);
+
+  $('end-case-title').textContent = 'Case: ' + D.title;
+  $('end-stats').innerHTML =
+    '<span class="stat-label">Score</span><span class="stat-val">' + state.score + ' points</span>' +
+    '<span class="stat-label">Clues Found</span><span class="stat-val">' + state.solvedPassages.length + ' / ' + D.passages.length + '</span>' +
+    '<span class="stat-label">Accuracy</span><span class="stat-val">' + state.correctCount + ' / ' + state.totalQuestions + ' (' + (state.totalQuestions ? Math.round(state.correctCount/state.totalQuestions*100) : 0) + '%)</span>' +
+    '<span class="stat-label">Max Streak</span><span class="stat-val">x' + state.maxStreak + '</span>';
+
+  // Collect all vocabulary
+  const allVocab = D.passages.flatMap(p => p.vocabulary.map(v => v.word + ' (' + v.korean + ')'));
+  $('end-vocab-list').textContent = allVocab.join(' · ');
+
+  spawnConfetti();
+
+  announce('사건 해결! 최종 점수 ' + state.score + '점. 정답 ' + state.correctCount + '개 중 ' + state.totalQuestions + '개. 최고 연속 정답 ' + state.maxStreak + '.');
+  $('btn-restart').focus();
+}
+
+/* ===== PARTICLES ===== */
+function spawnSparkles() {
+  const colors = ['#d4a030','#e8b849','#ffd700','#fff'];
+  for (let i = 0; i < 15; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const cx = window.innerWidth / 2 + (Math.random()-0.5)*200;
+    const cy = window.innerHeight / 2;
+    p.style.left = cx + 'px';
+    p.style.top = cy + 'px';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.width = p.style.height = (4+Math.random()*8) + 'px';
+    document.body.appendChild(p);
+    const angle = Math.random()*Math.PI*2;
+    const dist = 60+Math.random()*120;
+    p.animate([
+      { transform: 'translate(0,0) scale(1)', opacity: 1 },
+      { transform: 'translate(' + Math.cos(angle)*dist + 'px,' + Math.sin(angle)*dist + 'px) scale(0)', opacity: 0 }
+    ], { duration: 500+Math.random()*400, easing: 'ease-out' }).onfinish = () => p.remove();
+  }
+}
+
+function spawnDustParticles() {
+  const colors = ['#d4a030','#8b7355','#c9a96e','#fff8e1'];
+  for (let i = 0; i < 20; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const cx = window.innerWidth/2 + (Math.random()-0.5)*300;
+    const cy = window.innerHeight/2 + (Math.random()-0.5)*200;
+    p.style.left = cx + 'px';
+    p.style.top = cy + 'px';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.width = p.style.height = (3+Math.random()*6) + 'px';
+    document.body.appendChild(p);
+    p.animate([
+      { transform: 'translateY(0) scale(1)', opacity: 0.8 },
+      { transform: 'translateY(' + (-40-Math.random()*80) + 'px) scale(0)', opacity: 0 }
+    ], { duration: 800+Math.random()*600, easing: 'ease-out' }).onfinish = () => p.remove();
+  }
+}
+
+function spawnConfetti() {
+  const colors = ['#d4a030','#ffd700','#3fb950','#58a6ff','#f85149','#e040fb'];
+  for (let i = 0; i < 50; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random()*window.innerWidth + 'px';
+    c.style.top = '-20px';
+    c.style.width = (6+Math.random()*6) + 'px';
+    c.style.height = (14+Math.random()*10) + 'px';
+    c.style.background = colors[Math.floor(Math.random()*colors.length)];
+    c.style.transform = 'rotate(' + Math.random()*360 + 'deg)';
+    document.body.appendChild(c);
+    c.animate([
+      { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
+      { transform: 'translateY(' + (window.innerHeight+40) + 'px) rotate(' + (360+Math.random()*720) + 'deg)', opacity: 0.7 }
+    ], {
+      duration: 1500+Math.random()*1500,
+      easing: 'ease-in',
+      delay: Math.random()*500
+    }).onfinish = () => c.remove();
+  }
+}
+
+/* ===== KEYBOARD HANDLER ===== */
+document.addEventListener('keydown', e => {
+  const key = e.key;
+
+  switch (state.screen) {
+    case 'start':
+      if (key === ' ' || key === 'Enter') { e.preventDefault(); startGame(); }
+      break;
+
+    case 'case_select':
+      if (key >= '1' && key <= String(D.passages.length)) {
+        e.preventDefault();
+        const idx = parseInt(key) - 1;
+        if (!state.solvedPassages.includes(idx)) startPassage(idx);
+      }
+      break;
+
+    case 'reading':
+      if (key === ' ') {
+        e.preventDefault();
+        const p = D.passages[state.passageIdx];
+        playAudio(p.audioKey);
+      }
+      if (key === 't' || key === 'T') { e.preventDefault(); toggleTranslation(); }
+      if (key === 'Enter') { e.preventDefault(); startInvestigation(); }
+      if (key === 'r' || key === 'R') {
+        e.preventDefault();
+        playAudio(D.passages[state.passageIdx].audioKey);
+      }
+      if (key === 'Escape') {
+        e.preventDefault();
+        showScreen('case-screen');
+        updateCaseCards();
+        state.screen = 'case_select';
+      }
+      break;
+
+    case 'quiz':
+      if (key >= '1' && key <= '4') {
+        e.preventDefault();
+        const btns = $('quiz-choices').querySelectorAll('.choice-btn');
+        const idx = parseInt(key) - 1;
+        if (idx < btns.length) btns[idx].click();
+      }
+      break;
+
+    case 'quiz_result':
+      if (key === ' ' || key === 'Enter') { e.preventDefault(); advanceFromQuiz(); }
+      if (key === 'r' || key === 'R') {
+        e.preventDefault();
+        const q = D.passages[state.passageIdx].quizzes[state.quizOrder[state.quizIdx]];
+        if (q.audioKey) playAudio(q.audioKey);
+      }
+      break;
+
+    case 'vocab_review':
+      if (key === 'ArrowUp') { e.preventDefault(); navigateVocab(-1); }
+      if (key === 'ArrowDown') { e.preventDefault(); navigateVocab(1); }
+      if (key === 'r' || key === 'R') { e.preventDefault(); playVocabAudio(); }
+      if (key === ' ' || key === 'Enter') { e.preventDefault(); showClueCollected(); }
+      break;
+
+    case 'clue_collected':
+      if (key === ' ' || key === 'Enter') { e.preventDefault(); dismissClue(); }
+      break;
+
+    case 'bonus':
+      if (key >= '1' && key <= '4') {
+        e.preventDefault();
+        const btns = $('quiz-choices').querySelectorAll('.choice-btn');
+        const idx = parseInt(key) - 1;
+        if (idx < btns.length) btns[idx].click();
+      }
+      break;
+
+    case 'bonus_result':
+      if (key === ' ' || key === 'Enter') { e.preventDefault(); advanceBonus(); }
+      break;
+
+    case 'end':
+      if (key === ' ' || key === 'Enter') { e.preventDefault(); startGame(); }
+      if (key === 'Escape') { e.preventDefault(); showScreen('start-screen'); state.screen = 'start'; }
+      break;
+  }
+
+  if (key === ' ') e.preventDefault();
+});
+
+// Prevent Space on buttons from double-firing
+document.querySelectorAll('button').forEach(btn => {
+  btn.addEventListener('keydown', e => { if (e.key === ' ') e.preventDefault(); });
+});
+
+// Button click handlers
+$('start-btn').addEventListener('click', startGame);
+$('btn-listen').addEventListener('click', () => {
+  if (state.screen === 'reading') playAudio(D.passages[state.passageIdx].audioKey);
+});
+$('btn-translate').addEventListener('click', () => {
+  if (state.screen === 'reading') toggleTranslation();
+});
+$('btn-investigate').addEventListener('click', () => {
+  if (state.screen === 'reading') startInvestigation();
+});
+$('btn-restart').addEventListener('click', startGame);
+
+// Init
+init();
+</script>
+</body>
+</html>
