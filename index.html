@@ -42,6 +42,7 @@ body {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   padding: 2rem;
+  position: relative;
   animation: fadeIn 0.5s ease;
 }
 .screen.hidden { display: none; }
@@ -567,6 +568,142 @@ body {
   margin-left: 1rem;
 }
 .streak-badge.visible { display: inline; }
+/* ===== BACK BUTTON ===== */
+.back-btn {
+  position: absolute;
+  top: 1rem; left: 1rem;
+  font-family: 'Special Elite', cursive;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.3em 0.8em;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 10;
+}
+.back-btn:hover, .back-btn:focus {
+  color: var(--accent);
+  border-color: var(--accent);
+  outline: none;
+}
+/* ===== BRIEFING SCREEN ===== */
+#briefing-screen {
+  position: relative;
+  background:
+    linear-gradient(to bottom, rgba(13,17,23,0.55) 0%, rgba(13,17,23,0.85) 100%),
+    url('briefing_bg.png') center/cover no-repeat;
+  background-color: var(--bg);
+}
+.briefing-container {
+  max-width: 620px;
+  width: 100%;
+  text-align: center;
+}
+.briefing-step-indicator {
+  font-family: 'Special Elite', cursive;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-bottom: 1.5rem;
+  letter-spacing: 2px;
+}
+.briefing-step-indicator .step-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  margin: 0 4px;
+  vertical-align: middle;
+  transition: background 0.3s;
+}
+.briefing-step-indicator .step-dot.active {
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+.briefing-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+.briefing-title {
+  font-family: 'Special Elite', cursive;
+  font-size: 1.6rem;
+  color: var(--accent);
+  margin-bottom: 1.2rem;
+  text-shadow: 0 0 20px var(--accent-glow);
+}
+.briefing-text {
+  font-size: 1.15rem;
+  line-height: 1.9;
+  color: var(--text);
+  min-height: 3em;
+  margin-bottom: 1.5rem;
+}
+.briefing-text .typewriter-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--accent);
+  vertical-align: text-bottom;
+  animation: blink 0.7s step-end infinite;
+}
+@keyframes blink {
+  50% { opacity: 0; }
+}
+.tool-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
+  margin-bottom: 1.5rem;
+}
+.tool-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.7em 1em;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.tool-card .tool-key {
+  font-family: 'Special Elite', cursive;
+  font-size: 1rem;
+  color: var(--accent);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.15em 0.5em;
+  white-space: nowrap;
+}
+.tool-card .tool-desc {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+.scoring-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.4rem 1.5rem;
+  text-align: left;
+  margin: 0 auto 1.5rem;
+  max-width: 400px;
+}
+.scoring-grid .score-type {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+}
+.scoring-grid .score-pts {
+  color: var(--accent2);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.briefing-continue {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.briefing-continue.visible { opacity: 1; }
 </style>
 <script src="lesson_data.js"></script>
 <script src="sfx_data.js"></script>
@@ -590,8 +727,24 @@ body {
   </div>
 </div>
 
+<!-- ===== BRIEFING SCREEN ===== -->
+<div id="briefing-screen" class="screen hidden" role="main" aria-label="탐정 브리핑 화면">
+  <button class="back-btn" id="btn-back-briefing" tabindex="0">&larr; Back (Esc)</button>
+  <div class="briefing-container">
+    <div class="briefing-step-indicator" id="briefing-step-indicator">
+      BRIEFING <span class="step-dot active"></span><span class="step-dot"></span><span class="step-dot"></span>
+    </div>
+    <div class="briefing-icon" id="briefing-icon" aria-hidden="true">&#128269;</div>
+    <div class="briefing-title" id="briefing-title"></div>
+    <div class="briefing-text" id="briefing-text"></div>
+    <div id="briefing-extra"></div>
+    <div class="briefing-continue" id="briefing-continue"><kbd>Space</kbd> 계속</div>
+  </div>
+</div>
+
 <!-- ===== CASE SELECT SCREEN ===== -->
 <div id="case-screen" class="screen hidden" role="main" aria-label="사건 선택 화면">
+  <button class="back-btn" id="btn-back-case" tabindex="0">&larr; Briefing (Esc)</button>
   <div class="title" style="font-size:2rem; margin-bottom:0.3rem;">CASE FILES</div>
   <div style="color:var(--text-dim); margin-bottom:0.5rem;">조사할 사건을 선택하세요</div>
   <div class="case-grid" id="case-grid"></div>
@@ -602,6 +755,7 @@ body {
 
 <!-- ===== GAME SCREEN ===== -->
 <div id="game-screen" class="screen hidden" role="main" aria-label="Story Detective 게임">
+  <button class="back-btn" id="btn-back-game" tabindex="0">&larr; Cases (Esc)</button>
   <div class="top-bar">
     <div class="case-info" id="top-case-info">CASE 1: Jihun</div>
     <div class="score-info">Score: <span class="score-val" id="top-score">0</span>
@@ -657,6 +811,7 @@ body {
 
 <!-- ===== END SCREEN ===== -->
 <div id="end-screen" class="screen hidden" role="main" aria-label="게임 결과">
+  <button class="back-btn" id="btn-back-end" tabindex="0">&larr; Start (Esc)</button>
   <div class="report-title">&#128203; DETECTIVE REPORT</div>
   <div class="report-case" id="end-case-title"></div>
   <div class="report-stamp" id="end-stamp">CASE SOLVED!</div>
@@ -729,8 +884,202 @@ let state = {
   quizOrder: [],
   bonusIdx: 0,
   bonusOrder: [],
-  filledBlanks: []
+  filledBlanks: [],
+  briefingStep: 0
 };
+
+/* ===== BRIEFING ===== */
+let typewriterTimer = null;
+const BRIEFING_STEPS = [
+  {
+    icon: '\uD83D\uDD0D',
+    title: 'MISSION',
+    text: '"Detective, we have a new case."\n이야기를 읽고, 숨겨진 단서를 찾아내야 합니다.',
+    audioKey: 'briefing_1'
+  },
+  {
+    icon: '\uD83D\uDEE0\uFE0F',
+    title: 'INVESTIGATION TOOLS',
+    text: '조사 도구를 확인하세요.',
+    audioKey: 'briefing_2',
+    extra: 'tools'
+  },
+  {
+    icon: '\u2B50',
+    title: 'SCORING',
+    text: '단서를 모을수록 점수가 올라갑니다.',
+    audioKey: 'briefing_3',
+    extra: 'scoring'
+  }
+];
+
+function showBriefing() {
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  state.screen = 'briefing';
+  state.briefingStep = 0;
+  showScreen('briefing-screen');
+  playSfx('radio_static');
+  setTimeout(() => renderBriefingStep(), 400);
+}
+
+function renderBriefingStep() {
+  const step = BRIEFING_STEPS[state.briefingStep];
+  // Update step dots
+  const dots = $('briefing-step-indicator').querySelectorAll('.step-dot');
+  dots.forEach((d, i) => d.classList.toggle('active', i <= state.briefingStep));
+
+  $('briefing-icon').textContent = step.icon;
+  $('briefing-title').textContent = step.title;
+  $('briefing-continue').classList.remove('visible');
+  $('briefing-extra').innerHTML = '';
+
+  // Typewriter effect
+  typewriterText(step.text, $('briefing-text'), () => {
+    // After typing done, show extra content and continue hint
+    if (step.extra === 'tools') {
+      $('briefing-extra').innerHTML =
+        '<div class="tool-cards">' +
+          '<div class="tool-card"><span class="tool-key">Space</span><span class="tool-desc">음성 듣기</span></div>' +
+          '<div class="tool-card"><span class="tool-key">T</span><span class="tool-desc">번역 보기</span></div>' +
+          '<div class="tool-card"><span class="tool-key">Enter</span><span class="tool-desc">조사 시작</span></div>' +
+          '<div class="tool-card"><span class="tool-key">1~4</span><span class="tool-desc">답 선택</span></div>' +
+          '<div class="tool-card"><span class="tool-key">R</span><span class="tool-desc">다시 듣기</span></div>' +
+          '<div class="tool-card"><span class="tool-key">\u2191\u2193</span><span class="tool-desc">단어 탐색</span></div>' +
+        '</div>';
+      $('briefing-extra').style.animation = 'fadeIn 0.4s ease';
+    } else if (step.extra === 'scoring') {
+      $('briefing-extra').innerHTML =
+        '<div class="scoring-grid">' +
+          '<span class="score-type">4지선다</span><span class="score-pts">10점</span>' +
+          '<span class="score-type">True / False</span><span class="score-pts">8점</span>' +
+          '<span class="score-type">빈칸 채우기</span><span class="score-pts">12점</span>' +
+          '<span class="score-type">2연속 정답</span><span class="score-pts">x1.5 보너스</span>' +
+          '<span class="score-type">3연속+ 정답</span><span class="score-pts">x2 보너스</span>' +
+        '</div>';
+      $('briefing-extra').style.animation = 'fadeIn 0.4s ease';
+    }
+    $('briefing-continue').classList.add('visible');
+    $('briefing-continue').textContent = state.briefingStep < 2 ? '\u23CE Space \uB2E4\uC74C' : '\u23CE Space \uC0AC\uAC74 \uC120\uD0DD\uC73C\uB85C';
+  });
+
+  // Play narration
+  playAudio(step.audioKey);
+
+  announce(step.title + '. ' + step.text);
+}
+
+function typewriterText(text, el, onDone) {
+  if (typewriterTimer) clearInterval(typewriterTimer);
+  el.innerHTML = '';
+  let i = 0;
+  const span = document.createElement('span');
+  const cursor = document.createElement('span');
+  cursor.className = 'typewriter-cursor';
+  el.appendChild(span);
+  el.appendChild(cursor);
+
+  // Play typing SFX periodically
+  let sfxCounter = 0;
+
+  typewriterTimer = setInterval(() => {
+    if (i < text.length) {
+      if (text[i] === '\n') {
+        span.appendChild(document.createElement('br'));
+      } else {
+        span.appendChild(document.createTextNode(text[i]));
+      }
+      i++;
+      sfxCounter++;
+      if (sfxCounter % 3 === 0) playSfx('typing');
+    } else {
+      clearInterval(typewriterTimer);
+      typewriterTimer = null;
+      cursor.remove();
+      if (onDone) onDone();
+    }
+  }, 35);
+}
+
+function skipTypewriter() {
+  if (!typewriterTimer) return false;
+  clearInterval(typewriterTimer);
+  typewriterTimer = null;
+  // Show full text immediately
+  const step = BRIEFING_STEPS[state.briefingStep];
+  const el = $('briefing-text');
+  el.innerHTML = step.text.replace(/\n/g, '<br>');
+  return true;
+}
+
+function advanceBriefing() {
+  // If typewriter still running, skip to full text first
+  if (skipTypewriter()) {
+    // Show extra content
+    const step = BRIEFING_STEPS[state.briefingStep];
+    if (step.extra === 'tools') {
+      $('briefing-extra').innerHTML =
+        '<div class="tool-cards">' +
+          '<div class="tool-card"><span class="tool-key">Space</span><span class="tool-desc">음성 듣기</span></div>' +
+          '<div class="tool-card"><span class="tool-key">T</span><span class="tool-desc">번역 보기</span></div>' +
+          '<div class="tool-card"><span class="tool-key">Enter</span><span class="tool-desc">조사 시작</span></div>' +
+          '<div class="tool-card"><span class="tool-key">1~4</span><span class="tool-desc">답 선택</span></div>' +
+          '<div class="tool-card"><span class="tool-key">R</span><span class="tool-desc">다시 듣기</span></div>' +
+          '<div class="tool-card"><span class="tool-key">\u2191\u2193</span><span class="tool-desc">단어 탐색</span></div>' +
+        '</div>';
+    } else if (step.extra === 'scoring') {
+      $('briefing-extra').innerHTML =
+        '<div class="scoring-grid">' +
+          '<span class="score-type">4지선다</span><span class="score-pts">10점</span>' +
+          '<span class="score-type">True / False</span><span class="score-pts">8점</span>' +
+          '<span class="score-type">빈칸 채우기</span><span class="score-pts">12점</span>' +
+          '<span class="score-type">2연속 정답</span><span class="score-pts">x1.5 보너스</span>' +
+          '<span class="score-type">3연속+ 정답</span><span class="score-pts">x2 보너스</span>' +
+        '</div>';
+    }
+    $('briefing-continue').classList.add('visible');
+    $('briefing-continue').textContent = state.briefingStep < 2 ? '\u23CE Space \uB2E4\uC74C' : '\u23CE Space \uC0AC\uAC74 \uC120\uD0DD\uC73C\uB85C';
+    return;
+  }
+
+  state.briefingStep++;
+  if (state.briefingStep >= BRIEFING_STEPS.length) {
+    // Done — go to case select
+    startGame();
+  } else {
+    renderBriefingStep();
+  }
+}
+
+function goBackFromBriefing() {
+  if (typewriterTimer) { clearInterval(typewriterTimer); typewriterTimer = null; }
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  showScreen('start-screen');
+  state.screen = 'start';
+  announce('시작 화면으로 돌아갑니다.');
+}
+
+function goBackFromCaseSelect() {
+  showScreen('briefing-screen');
+  state.screen = 'briefing';
+  state.briefingStep = 0;
+  renderBriefingStep();
+  announce('브리핑 화면으로 돌아갑니다.');
+}
+
+function goBackFromReading() {
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  showScreen('case-screen');
+  updateCaseCards();
+  state.screen = 'case_select';
+  announce('사건 선택 화면으로 돌아갑니다.');
+  $('case-grid').children[0].focus();
+}
+
+function goBackToStart() {
+  showScreen('start-screen');
+  state.screen = 'start';
+  announce('시작 화면으로 돌아갑니다.');
+}
 
 /* ===== SCREENS ===== */
 function showScreen(id) {
@@ -790,7 +1139,6 @@ function updateCaseCards() {
 
 /* ===== GAME FLOW ===== */
 function startGame() {
-  if (audioCtx.state === 'suspended') audioCtx.resume();
   state.score = 0;
   state.streak = 0;
   state.maxStreak = 0;
@@ -818,6 +1166,7 @@ function startPassage(idx) {
   showScreen('game-screen');
   showPanel('reading-panel');
   state.screen = 'reading';
+  $('btn-back-game').style.display = '';
 
   $('top-case-info').textContent = 'CASE ' + (idx+1) + ': ' + p.character;
   $('top-score').textContent = state.score;
@@ -844,6 +1193,7 @@ function startInvestigation() {
   playSfx('magnifying');
   showPanel('quiz-panel');
   state.screen = 'quiz';
+  $('btn-back-game').style.display = 'none';
   loadQuiz();
 }
 
@@ -1157,6 +1507,7 @@ function startBonusRound() {
   showScreen('game-screen');
   showPanel('quiz-panel');
   state.screen = 'bonus';
+  $('btn-back-game').style.display = 'none';
   $('top-case-info').textContent = 'BONUS ROUND';
   loadBonusQuiz();
 }
@@ -1330,7 +1681,12 @@ document.addEventListener('keydown', e => {
 
   switch (state.screen) {
     case 'start':
-      if (key === ' ' || key === 'Enter') { e.preventDefault(); startGame(); }
+      if (key === ' ' || key === 'Enter') { e.preventDefault(); showBriefing(); }
+      break;
+
+    case 'briefing':
+      if (key === ' ' || key === 'Enter') { e.preventDefault(); advanceBriefing(); }
+      if (key === 'Escape') { e.preventDefault(); goBackFromBriefing(); }
       break;
 
     case 'case_select':
@@ -1339,6 +1695,7 @@ document.addEventListener('keydown', e => {
         const idx = parseInt(key) - 1;
         if (!state.solvedPassages.includes(idx)) startPassage(idx);
       }
+      if (key === 'Escape') { e.preventDefault(); goBackFromCaseSelect(); }
       break;
 
     case 'reading':
@@ -1353,12 +1710,7 @@ document.addEventListener('keydown', e => {
         e.preventDefault();
         playAudio(D.passages[state.passageIdx].audioKey);
       }
-      if (key === 'Escape') {
-        e.preventDefault();
-        showScreen('case-screen');
-        updateCaseCards();
-        state.screen = 'case_select';
-      }
+      if (key === 'Escape') { e.preventDefault(); goBackFromReading(); }
       break;
 
     case 'quiz':
@@ -1404,8 +1756,8 @@ document.addEventListener('keydown', e => {
       break;
 
     case 'end':
-      if (key === ' ' || key === 'Enter') { e.preventDefault(); startGame(); }
-      if (key === 'Escape') { e.preventDefault(); showScreen('start-screen'); state.screen = 'start'; }
+      if (key === ' ' || key === 'Enter') { e.preventDefault(); showBriefing(); }
+      if (key === 'Escape') { e.preventDefault(); goBackToStart(); }
       break;
   }
 
@@ -1418,7 +1770,7 @@ document.querySelectorAll('button').forEach(btn => {
 });
 
 // Button click handlers
-$('start-btn').addEventListener('click', startGame);
+$('start-btn').addEventListener('click', showBriefing);
 $('btn-listen').addEventListener('click', () => {
   if (state.screen === 'reading') playAudio(D.passages[state.passageIdx].audioKey);
 });
@@ -1428,7 +1780,15 @@ $('btn-translate').addEventListener('click', () => {
 $('btn-investigate').addEventListener('click', () => {
   if (state.screen === 'reading') startInvestigation();
 });
-$('btn-restart').addEventListener('click', startGame);
+$('btn-restart').addEventListener('click', showBriefing);
+
+// Back button click handlers
+$('btn-back-briefing').addEventListener('click', goBackFromBriefing);
+$('btn-back-case').addEventListener('click', goBackFromCaseSelect);
+$('btn-back-game').addEventListener('click', () => {
+  if (state.screen === 'reading') goBackFromReading();
+});
+$('btn-back-end').addEventListener('click', goBackToStart);
 
 // Init
 init();
