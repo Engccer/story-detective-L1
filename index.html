@@ -704,6 +704,55 @@ body {
   transition: opacity 0.4s;
 }
 .briefing-continue.visible { opacity: 1; }
+/* ===== TOUCH-FRIENDLY CONTINUE BUTTON ===== */
+.tap-continue {
+  display: inline-block;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 1rem;
+  padding: 0.6em 2em;
+  margin-top: 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tap-continue:hover, .tap-continue:focus {
+  background: var(--accent);
+  color: var(--bg);
+  outline: none;
+}
+/* Vocab item touchable */
+.vocab-item { cursor: pointer; }
+.vocab-item:hover { background: rgba(212,160,48,0.08); }
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 600px) {
+  .screen { padding: 1rem; }
+  #start-screen .title { font-size: 2.2rem; }
+  #start-screen .subtitle { font-size: 1rem; }
+  #start-screen .lesson-title { font-size: 1.2rem; }
+  .magnifying { font-size: 3rem; }
+  .action-btn { font-size: 1.1rem; padding: 0.6em 1.8em; }
+  .controls-hint { font-size: 0.75rem; }
+  .case-card { width: 160px; padding: 1rem; }
+  .case-icon { font-size: 2rem; }
+  #game-screen { padding: 0.6rem 1rem; }
+  .top-bar { font-size: 0.8rem; padding: 0.4rem 0; }
+  .reading-card { padding: 1.2rem; }
+  .passage-text { font-size: 1.05rem; line-height: 1.8; }
+  .ctrl-btn { font-size: 0.9rem; padding: 0.5em 1em; min-height: 44px; }
+  .choice-btn { font-size: 0.95rem; padding: 0.7em 0.8em; min-height: 48px; }
+  .choices-grid { gap: 0.5em; }
+  .tool-cards { grid-template-columns: 1fr; }
+  .briefing-title { font-size: 1.2rem; }
+  .briefing-text { font-size: 1rem; }
+  .clue-card { width: 220px; height: 160px; }
+  #end-screen .report-title { font-size: 1.6rem; }
+  .report-stamp { font-size: 1.8rem; }
+  .report-stats { font-size: 0.9rem; }
+  .vocab-item { padding: 0.8rem 1rem; min-height: 44px; }
+}
 </style>
 <script src="lesson_data.js"></script>
 <script src="sfx_data.js"></script>
@@ -738,7 +787,7 @@ body {
     <div class="briefing-title" id="briefing-title"></div>
     <div class="briefing-text" id="briefing-text"></div>
     <div id="briefing-extra"></div>
-    <div class="briefing-continue" id="briefing-continue"><kbd>Space</kbd> 계속</div>
+    <div class="briefing-continue" id="briefing-continue"><kbd>Space</kbd> 계속 / 화면을 탭하세요</div>
   </div>
 </div>
 
@@ -791,8 +840,9 @@ body {
     <div class="vocab-title">&#128203; KEY VOCABULARY</div>
     <ul class="vocab-list" id="vocab-list" role="listbox" aria-label="핵심 단어 목록"></ul>
     <div class="vocab-controls">
-      <kbd>↑</kbd><kbd>↓</kbd> 이동 &nbsp; <kbd>R</kbd> 발음 듣기 &nbsp; <kbd>Space</kbd> 다음
+      단어를 탭하면 발음을 들을 수 있어요 &nbsp; <kbd>↑↓</kbd> 이동 &nbsp; <kbd>R</kbd> 발음
     </div>
+    <button class="tap-continue" id="btn-vocab-next">다음으로 ▸</button>
   </div>
 </div>
 
@@ -805,7 +855,7 @@ body {
       <div class="clue-stamp">SOLVED</div>
     </div>
     <div class="clue-progress" id="clue-progress">Clues: 1 / 3</div>
-    <div class="clue-next-hint"><kbd>Space</kbd> 다음 사건으로</div>
+    <div class="clue-next-hint">탭하거나 <kbd>Space</kbd> 다음 사건으로</div>
   </div>
 </div>
 
@@ -1411,7 +1461,7 @@ function showQuizResult(isCorrect, q) {
       '</div>' +
       (isCorrect ? '<div class="result-points">+' + points + ' points' + (state.streak >= 2 ? ' (x' + (state.streak >= 3 ? '2' : '1.5') + ' streak!)' : '') + '</div>' : '') +
       '<div class="result-explanation">' + q.explanation + '</div>' +
-      '<div class="result-next"><kbd>Space</kbd> 다음으로</div>' +
+      '<div class="result-next">탭하거나 <kbd>Space</kbd> 다음으로</div>' +
     '</div>';
 
   if (isCorrect) {
@@ -1592,7 +1642,7 @@ function handleBonusAnswer(idx, q) {
       '</div>' +
       (isCorrect ? '<div class="result-points">+5 points</div>' : '') +
       '<div class="result-explanation">' + q.explanation + '</div>' +
-      '<div class="result-next"><kbd>Space</kbd> 다음</div>' +
+      '<div class="result-next">탭하거나 <kbd>Space</kbd> 다음</div>' +
     '</div>';
 
   announce(isCorrect ? '정답! 5점 획득.' : '오답. ' + q.explanation);
@@ -1811,6 +1861,49 @@ $('btn-back-game').addEventListener('click', () => {
   if (state.screen === 'reading') goBackFromReading();
 });
 $('btn-back-end').addEventListener('click', goBackToStart);
+
+// === TOUCH SUPPORT ===
+
+// 1) Briefing: tap anywhere in briefing container to advance
+$('briefing-screen').addEventListener('click', e => {
+  if (state.screen !== 'briefing') return;
+  // Don't intercept back button clicks
+  if (e.target.closest('.back-btn')) return;
+  advanceBriefing();
+});
+
+// 2) Quiz result / Bonus result: tap result card to advance
+$('quiz-result').addEventListener('click', e => {
+  if (!e.target.closest('.result-card')) return;
+  if (state.screen === 'quiz_result') advanceFromQuiz();
+  else if (state.screen === 'bonus_result') advanceBonus();
+});
+
+// 3) Vocab review: tap items to select + play audio, button to continue
+$('vocab-list').addEventListener('click', e => {
+  if (state.screen !== 'vocab_review') return;
+  const item = e.target.closest('.vocab-item');
+  if (!item) return;
+  const items = $('vocab-list').children;
+  const idx = Array.from(items).indexOf(item);
+  if (idx < 0) return;
+  // Update selection
+  items[state.vocabIdx].classList.remove('active');
+  items[state.vocabIdx].setAttribute('aria-selected', 'false');
+  state.vocabIdx = idx;
+  items[idx].classList.add('active');
+  items[idx].setAttribute('aria-selected', 'true');
+  // Play pronunciation
+  playVocabAudio();
+});
+$('btn-vocab-next').addEventListener('click', () => {
+  if (state.screen === 'vocab_review') showClueCollected();
+});
+
+// 4) Clue overlay: tap to dismiss
+$('clue-overlay').addEventListener('click', () => {
+  if (state.screen === 'clue_collected') dismissClue();
+});
 
 // Init
 init();
