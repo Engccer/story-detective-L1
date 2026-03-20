@@ -193,7 +193,7 @@ const LESSON_DATA = {
         {
           type: "fill_blank",
           source: "after_read",
-          question: "Hope is my _____ _____ and my best friend. She is always by my _____. With her, I feel free and _____.",
+          question: "Hope is my _____ and my best friend. She is always by my _____. With her, I feel free and _____.",
           audioKey: "quiz_3_4",
           blanks: [
             { position: 0, answer: "guide dog", options: ["guide dog", "best friend", "dear neighbor", "school band"] },
