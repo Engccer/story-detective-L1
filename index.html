@@ -935,6 +935,7 @@ let state = {
   bonusIdx: 0,
   bonusOrder: [],
   filledBlanks: [],
+  retrying: false,
   briefingStep: 0
 };
 
@@ -1368,37 +1369,70 @@ function renderFillBlank(q, container) {
 
 function handleMCAnswer(idx, q) {
   if (state.screen !== 'quiz') return;
-  state.screen = 'quiz_result';
   const isCorrect = idx === q.answer;
   const btns = $('quiz-choices').querySelectorAll('.choice-btn');
-  btns.forEach((btn, i) => {
-    btn.disabled = true;
-    if (i === q.answer) btn.classList.add('correct');
-    if (i === idx && !isCorrect) btn.classList.add('wrong');
-  });
-  showQuizResult(isCorrect, q);
+
+  if (!isCorrect) {
+    // Wrong: disable only chosen option, let them retry
+    if (!state.retrying) { state.retrying = true; state.streak = 0; updateStreak(); }
+    btns[idx].disabled = true;
+    btns[idx].classList.add('wrong');
+    playSfx('wrong');
+    announce('오답! 다시 시도해 보세요.');
+    return;
+  }
+
+  // Correct
+  state.screen = 'quiz_result';
+  btns.forEach(btn => { btn.disabled = true; });
+  btns[q.answer].classList.add('correct');
+  showQuizResult(true, q);
 }
 
 function handleTFAnswer(val, q) {
   if (state.screen !== 'quiz') return;
-  state.screen = 'quiz_result';
   const isCorrect = val === q.answer;
   const btns = $('quiz-choices').querySelectorAll('.choice-btn');
-  btns.forEach((btn, i) => {
-    btn.disabled = true;
-    const bVal = i === 0;
-    if (bVal === q.answer) btn.classList.add('correct');
-    if (bVal === val && !isCorrect) btn.classList.add('wrong');
-  });
-  showQuizResult(isCorrect, q);
+
+  if (!isCorrect) {
+    // Wrong: disable chosen option, let them retry
+    if (!state.retrying) { state.retrying = true; state.streak = 0; updateStreak(); }
+    const wrongIdx = val ? 0 : 1;
+    btns[wrongIdx].disabled = true;
+    btns[wrongIdx].classList.add('wrong');
+    playSfx('wrong');
+    announce('오답! 다시 시도해 보세요.');
+    return;
+  }
+
+  // Correct
+  state.screen = 'quiz_result';
+  btns.forEach(btn => { btn.disabled = true; });
+  const correctIdx = q.answer ? 0 : 1;
+  btns[correctIdx].classList.add('correct');
+  showQuizResult(true, q);
 }
 
 function handleFillAnswer(selected, answer, q) {
   if (state.screen !== 'quiz') return;
   const isCorrect = selected === answer;
-  state.filledBlanks.push(isCorrect ? answer : selected);
 
-  if (isCorrect && state.blankIdx < q.blanks.length - 1) {
+  if (!isCorrect) {
+    // Wrong: disable only the chosen option, let them retry same blank
+    if (!state.retrying) { state.retrying = true; state.streak = 0; updateStreak(); }
+    const btns = $('quiz-choices').querySelectorAll('.choice-btn');
+    btns.forEach(btn => {
+      if (btn.textContent.includes(selected)) { btn.disabled = true; btn.classList.add('wrong'); }
+    });
+    playSfx('wrong');
+    announce('오답! 다시 시도해 보세요.');
+    return;
+  }
+
+  // Correct for this blank
+  state.filledBlanks.push(answer);
+
+  if (state.blankIdx < q.blanks.length - 1) {
     // Move to next blank
     state.blankIdx++;
     playSfx('typing');
@@ -1409,45 +1443,38 @@ function handleFillAnswer(selected, answer, q) {
     return;
   }
 
-  // All blanks done or wrong
+  // All blanks correct
   state.screen = 'quiz_result';
-  const allCorrect = isCorrect && state.blankIdx === q.blanks.length - 1;
-
-  // Show all blanks filled
   const parts = q.question.split('_____');
   let html = '';
   for (let i = 0; i < parts.length; i++) {
     html += parts[i];
     if (i < q.blanks.length) {
-      const filled = i < state.filledBlanks.length;
-      const val = filled ? state.filledBlanks[i] : '___';
-      const cls = filled ? (state.filledBlanks[i] === q.blanks[i].answer ? 'correct' : 'wrong') : '';
-      html += '<span class="blank ' + cls + '">' + val + '</span>';
+      html += '<span class="blank correct">' + state.filledBlanks[i] + '</span>';
     }
   }
   $('quiz-question').innerHTML = html;
   $('quiz-choices').innerHTML = '';
 
-  showQuizResult(allCorrect, q);
+  showQuizResult(true, q);
 }
 
 function showQuizResult(isCorrect, q) {
   state.totalQuestions++;
   let points = 0;
+  const wasRetrying = state.retrying;
+  state.retrying = false;
 
-  if (isCorrect) {
-    state.correctCount++;
+  state.correctCount++;
+  if (!wasRetrying) {
     state.streak++;
     if (state.streak > state.maxStreak) state.maxStreak = state.streak;
-    const mult = state.streak >= 3 ? 2 : state.streak === 2 ? 1.5 : 1;
-    const base = q.type === 'fill_blank' ? 12 : q.type === 'true_false' ? 8 : 10;
-    points = Math.round(base * mult);
-    state.score += points;
-    playSfx('correct');
-  } else {
-    state.streak = 0;
-    playSfx('wrong');
   }
+  const mult = state.streak >= 3 ? 2 : state.streak === 2 ? 1.5 : 1;
+  const base = q.type === 'fill_blank' ? 12 : q.type === 'true_false' ? 8 : 10;
+  points = wasRetrying ? Math.round(base * 0.5) : Math.round(base * mult);
+  state.score += points;
+  playSfx('correct');
 
   $('top-score').textContent = state.score;
   updateStreak();
@@ -1456,21 +1483,19 @@ function showQuizResult(isCorrect, q) {
   rc.classList.remove('hidden');
   rc.innerHTML =
     '<div class="result-card">' +
-      '<div class="result-header ' + (isCorrect ? 'is-correct' : 'is-wrong') + '">' +
-        (isCorrect ? '&#128269; CLUE FOUND!' : '&#10060; WRONG LEAD') +
+      '<div class="result-header is-correct">' +
+        '&#128269; CLUE FOUND!' +
       '</div>' +
-      (isCorrect ? '<div class="result-points">+' + points + ' points' + (state.streak >= 2 ? ' (x' + (state.streak >= 3 ? '2' : '1.5') + ' streak!)' : '') + '</div>' : '') +
+      '<div class="result-points">+' + points + ' points' +
+        (wasRetrying ? ' (재도전)' : (state.streak >= 2 ? ' (x' + (state.streak >= 3 ? '2' : '1.5') + ' streak!)' : '')) +
+      '</div>' +
       '<div class="result-explanation">' + q.explanation + '</div>' +
       '<div class="result-next">탭하거나 <kbd>Space</kbd> 다음으로</div>' +
     '</div>';
 
-  if (isCorrect) {
-    spawnSparkles();
-  }
+  spawnSparkles();
 
-  announce(isCorrect
-    ? '정답! 단서를 찾았습니다. ' + points + '점 획득.'
-    : '오답. ' + q.explanation);
+  announce('정답! 단서를 찾았습니다. ' + points + '점 획득.');
 }
 
 function updateStreak() {
@@ -1490,6 +1515,7 @@ function advanceFromQuiz() {
     state.screen = 'quiz';
     state.blankIdx = 0;
     state.filledBlanks = [];
+    state.retrying = false;
     loadQuiz();
   } else {
     showVocabReview();
@@ -1614,38 +1640,45 @@ function loadBonusQuiz() {
 
 function handleBonusAnswer(idx, q) {
   if (state.screen !== 'bonus') return;
-  state.screen = 'bonus_result';
   const isCorrect = idx === q.answer;
   const btns = $('quiz-choices').querySelectorAll('.choice-btn');
-  btns.forEach((btn, i) => {
-    btn.disabled = true;
-    if (i === q.answer) btn.classList.add('correct');
-    if (i === idx && !isCorrect) btn.classList.add('wrong');
-  });
+
+  if (!isCorrect) {
+    // Wrong: disable only chosen option, let them retry
+    if (!state.bonusRetrying) state.bonusRetrying = true;
+    btns[idx].disabled = true;
+    btns[idx].classList.add('wrong');
+    playSfx('wrong');
+    announce('오답! 다시 시도해 보세요.');
+    return;
+  }
+
+  // Correct
+  state.screen = 'bonus_result';
+  btns.forEach(btn => { btn.disabled = true; });
+  btns[q.answer].classList.add('correct');
 
   state.totalQuestions++;
-  if (isCorrect) {
-    state.correctCount++;
-    state.score += 5;
-    playSfx('correct');
-  } else {
-    playSfx('wrong');
-  }
+  state.correctCount++;
+  const pts = state.bonusRetrying ? 3 : 5;
+  state.bonusRetrying = false;
+  state.score += pts;
+  playSfx('correct');
   $('top-score').textContent = state.score;
 
   const rc = $('quiz-result');
   rc.classList.remove('hidden');
   rc.innerHTML =
     '<div class="result-card">' +
-      '<div class="result-header ' + (isCorrect ? 'is-correct' : 'is-wrong') + '">' +
-        (isCorrect ? '&#9989; Correct!' : '&#10060; Wrong!') +
+      '<div class="result-header is-correct">' +
+        '&#9989; Correct!' +
       '</div>' +
-      (isCorrect ? '<div class="result-points">+5 points</div>' : '') +
+      '<div class="result-points">+' + pts + ' points</div>' +
       '<div class="result-explanation">' + q.explanation + '</div>' +
       '<div class="result-next">탭하거나 <kbd>Space</kbd> 다음</div>' +
     '</div>';
 
-  announce(isCorrect ? '정답! 5점 획득.' : '오답. ' + q.explanation);
+  announce('정답! ' + pts + '점 획득.');
 }
 
 function advanceBonus() {
